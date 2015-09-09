@@ -65,6 +65,30 @@ public class WordCountTopology {
       declarer.declare(new Fields("word", "count"));
     }
   }
+  
+  public static class WordCountOut2File extends BaseBasicBolt {
+	    /**
+		 * 
+		 */
+		private static final long serialVersionUID = 9080948772140456741L;
+		Map<String, Integer> counts = new HashMap<String, Integer>();
+
+	    @Override
+	    public void execute(Tuple tuple, BasicOutputCollector collector) {
+	      String word = tuple.getString(0);
+	      Integer count = counts.get(word);
+	      if (count == null)
+	        count = 0;
+	      count++;
+	      counts.put(word, count);
+	      collector.emit(new Values(word, count));
+	    }
+
+	    @Override
+	    public void declareOutputFields(OutputFieldsDeclarer declarer) {
+	      declarer.declare(new Fields("word", "count"));
+	    }
+	  }
 
   public static void main(String[] args) throws Exception {
 
@@ -72,8 +96,9 @@ public class WordCountTopology {
 
     builder.setSpout("spout", new RandomSentenceSpout(), 5);
 
-    builder.setBolt("split", new SplitSentence(), 8).shuffleGrouping("spout");
-    builder.setBolt("count", new WordCount(), 12).fieldsGrouping("split", new Fields("word"));
+//    builder.setBolt("split", new SplitSentence(), 8).shuffleGrouping("spout");
+//    builder.setBolt("count", new WordCount(), 12).fieldsGrouping("split", new Fields("word"));
+//    builder.setBolt("countOut", new WordCountOut2File(), 12).fieldsGrouping("split", new Fields("word"));
 
     Config conf = new Config();
     conf.setDebug(true);
@@ -90,9 +115,9 @@ public class WordCountTopology {
       LocalCluster cluster = new LocalCluster();
       cluster.submitTopology("word-count", conf, builder.createTopology());
 
-      Thread.sleep(10000);
-
-      cluster.shutdown();
+//      Thread.sleep(10000);
+//
+//      cluster.shutdown();
     }
   }
 }
